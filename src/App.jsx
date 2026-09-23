@@ -7,13 +7,16 @@ import Settings from "./components/Settings"
 import Todo from "./components/Todo"
 import { Tasks } from "./components/Tasks"
 import { ProductList } from "./components/Api/ProductList"
-import NewsList from "./components/NewsList"
+import NewsList from "./components/news/NewsList"
 import Api from "./components/Api/Api"
 import ApiDetail from "./components/Api/ApiDetail"
 import MantineUi from "./components/MantineUi"
 import Login from "./pages/auth/Login"
 import SignUp from "./pages/auth/SignUp"
 import AddBlogs from "./pages/blogs/AddBlogs"
+import BlogLists from "./pages/blogs/BlogLists"
+import Dashboard from "./pages/admin/Dashboard"
+import PrivateRoutes from "./pages/routes/PrivateRoutes"
 
 
 
@@ -50,7 +53,14 @@ return(
 
           <Route path="/signup" element={<SignUp/>}/>
 
-          <Route path="/add-blog" element={<AddBlogs/>}/>
+           <Route path="/add-blog" element={<PrivateRoutes><AddBlogs /></PrivateRoutes>} />
+
+           <Route path="/admin/blogs/add" element={<PrivateRoutes><AddBlogs /></PrivateRoutes>} />
+
+           <Route path="/blogs" element={<BlogLists />} />
+
+           <Route path="/admin/dashboard" element={<PrivateRoutes><Dashboard /></PrivateRoutes>} />
+
       </Routes>
    
   </>

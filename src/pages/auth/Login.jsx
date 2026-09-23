@@ -34,7 +34,8 @@ function Login() {
         fullName: response.data.fullName,
         role: response.data.role,
       }));
-      navigate("/", { replace: true });
+      window.dispatchEvent(new Event("auth-changed"));
+      navigate(response.data.role === "ADMIN" ? "/admin/dashboard" : "/", { replace: true });
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||

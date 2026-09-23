@@ -1,4 +1,4 @@
-import { Alert, Button, Select, Textarea, TextInput, Title } from "@mantine/core";
+import { Alert, Button, NumberInput, Select, Textarea, TextInput, Title } from "@mantine/core";
 import { useState } from "react";
 import { Link } from "react-router";
 import { PostRequest } from "../services/http";
@@ -8,6 +8,7 @@ const initialForm = {
   body: "",
   category: "",
   image: "",
+  likes: 0,
 };
 
 function AddBlogs() {
@@ -35,7 +36,6 @@ function AddBlogs() {
     try {
       await PostRequest("blogs/create", {
         ...form,
-        likes: 0,
         ...(user?.id ? { author: user.id } : {}),
       });
 
@@ -83,6 +83,14 @@ function AddBlogs() {
             />
             <Textarea label="Body" name="body" value={form.body} onChange={updateField} minRows={8} required size="md" />
             <TextInput label="Cover image URL" name="image" value={form.image} onChange={updateField} placeholder="https://example.com/image.jpg" size="md" />
+            <NumberInput
+              label="Likes"
+              value={form.likes}
+              onChange={(value) => setForm({ ...form, likes: Number(value) || 0 })}
+              min={0}
+              step={1}
+              size="md"
+            />
             <Button type="submit" fullWidth size="md" loading={loading} color="dark" className="mt-6">Publish blog</Button>
           </form>
         </section>
