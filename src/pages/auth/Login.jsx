@@ -26,16 +26,20 @@ function Login() {
         throw new Error(response.data);
       }
 
+      const authenticatedUser = response.data.user || response.data;
+      const role = String(authenticatedUser.role || "user").toLowerCase();
+
       localStorage.setItem("authToken", response.data.token);
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("role", role);
       localStorage.setItem("user", JSON.stringify({
-        id: response.data.id,
-        email: response.data.email,
-        fullName: response.data.fullName,
-        role: response.data.role,
+        id: authenticatedUser.id || authenticatedUser._id,
+        email: authenticatedUser.email,
+        fullName: authenticatedUser.fullName,
+        role,
       }));
       window.dispatchEvent(new Event("auth-changed"));
-      navigate(response.data.role === "ADMIN" ? "/admin/dashboard" : "/", { replace: true });
+      navigate(role === "admin" ? "/admin/dashboard" : "/", { replace: true });
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||

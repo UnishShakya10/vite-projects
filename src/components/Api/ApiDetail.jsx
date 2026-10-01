@@ -1,49 +1,63 @@
 
-import { Ship } from "lucide-react";
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
+
+const loadProduct = async (id) => {
+  const response = await fetch(`https://dummyjson.com/products/${id}`);
+  if (!response.ok) {
+    throw new Error("Unable to load product");
+  }
+
+  return response.json();
+};
 
 const ApiDetail = () => {
-
   const params = useParams();
   const navigate = useNavigate();
-
   const [newProduct, setNewProduct] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isFetched, setIsFetched] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchProducts = async () => {
-
     try {
-
       setLoading(true);
-
-      const response = await fetch(
-        `https://dummyjson.com/products/${params.id}`
-      );
-
-      const finalResponse = await response.json();
-
-      console.log(finalResponse);
-
-      setNewProduct(finalResponse);
+      setError("");
+      setNewProduct(await loadProduct(params.id));
       setIsFetched(true);
-
-    } catch (err) {
-
-      alert("Error loading product");
-
+    } catch (loadError) {
+      setError(loadError.message);
     } finally {
-
       setLoading(false);
-
     }
   };
-useEffect (()=>{
-    fetchProducts()
-  },[]
-)
+
+  useEffect(() => {
+    let active = true;
+
+    loadProduct(params.id)
+      .then((product) => {
+        if (active) {
+          setError("");
+          setNewProduct(product);
+          setIsFetched(true);
+        }
+      })
+      .catch((loadError) => {
+        if (active) {
+          setError(loadError.message);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [params.id]);
 
   return (
     <div className="min-h-screen bg-gray-100 px-8 py-10 ">
@@ -70,6 +84,8 @@ useEffect (()=>{
         </button>
 
       </div>
+
+      {error && <p className="text-center text-red-600">{error}</p>}
 
       {/* PRODUCT DETAILS */}
 

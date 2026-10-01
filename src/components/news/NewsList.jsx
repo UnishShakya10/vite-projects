@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-const NewsList = () => {
+export const NewsList = () => {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -150,5 +150,3 @@ const NewsList = () => {
     </div>
   );
 };
-
-export default NewsList;

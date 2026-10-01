@@ -1,32 +1,57 @@
 import { Heart } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
+
+const loadProducts = async () => {
+  const response = await fetch("https://dummyjson.com/products?limit=30");
+  if (!response.ok) {
+    throw new Error("Unable to load products");
+  }
+
+  const data = await response.json();
+  return Array.isArray(data.products) ? data.products : [];
+};
 
 const Api = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [cat, setCat] = useState("All");
 
   const fetchProducts = async () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://dummyjson.com/products?limit=30"
-      );
-
-      const data = await response.json();
-
-      setProducts(data.products);
+      setProducts(await loadProducts());
     } catch (error) {
-      console.log("Error:", error);
+      console.error("Error loading products:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    let active = true;
+
+    loadProducts()
+      .then((loadedProducts) => {
+        if (active) {
+          setProducts(loadedProducts);
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          console.error("Error loading products:", error);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Get unique categories

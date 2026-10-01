@@ -1,37 +1,39 @@
-import { Alert } from "@mantine/core";
-import { Link } from "react-router";
+import { Link, Navigate, Outlet } from 'react-router'
+import { Title } from '@mantine/core'
 
-function PrivateRoutes({ children }) {
-  const token = localStorage.getItem("authToken") || localStorage.getItem("token");
-  let user = null;
+const PrivateRoutes = () => {
 
-  try {
-    user = JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    localStorage.removeItem("user");
-  }
+    const token = localStorage.getItem("token")
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null")
+    const role = localStorage.getItem("role") || storedUser?.role
 
-  if (!token) {
-    return (
-      <main className="min-h-[calc(100vh-65px)] bg-[#f5f5f0] px-5 py-12">
-        <Alert color="orange" title="Login required" className="mx-auto max-w-2xl">
-          Please <Link to="/login" className="font-bold underline">log in</Link> with an administrator account to access this page.
-        </Alert>
-      </main>
-    );
-  }
+    if (!token ) {
+        return <Navigate to="/login" replace />
+    }
 
-  if (user?.role !== "ADMIN") {
-    return (
-      <main className="min-h-[calc(100vh-65px)] bg-[#f5f5f0] px-5 py-12">
-        <Alert color="red" title="Admin access required" className="mx-auto max-w-2xl">
-          Your account has user access. Only administrators can add blogs or open the admin dashboard.
-        </Alert>
-      </main>
-    );
-  }
+    if (token && String(role).toLowerCase() === "admin") {
+    
+  return (
+    <>
+  
+   
+  <div className="flex w-full "> 
+            <div className='flex flex-col gap-6 bg-black text-white w-1/6 h-screen p-6'>
+            <Title size={30} >Admin Admin</Title>
+          <Link to={"/admin/dashboard"}>Dashboard</Link>
+          <Link to={"blogs/add"}>Blog</Link>
+          <div>Home</div>
+            </div>
+        
+        <div className='w-5/6 p-4'>
+            <Outlet/>
+        </div>
+         </div>
+    </>
+  )
+    }
 
-  return children;
+    return <Navigate to="/" replace />
 }
 
 export default PrivateRoutes
