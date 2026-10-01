@@ -102,6 +102,13 @@ const AddBlog = () => {
                         onChange={updateField}
                         required
                     />
+                    <TextInput
+                        label="likes"
+                        name="likes"
+                        value={form.likes}
+                        onChange={updateField}
+                        required
+                    />
 
                     <FileInput
                     label="Cover image"
