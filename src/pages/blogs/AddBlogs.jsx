@@ -1,4 +1,5 @@
 import { Alert, Button, FileInput, Textarea, TextInput } from "@mantine/core";
+import { Images } from "lucide-react";
 import { useState } from "react";
 import { APIURL, PostRequest } from "../services/http";
 
@@ -109,19 +110,20 @@ const AddBlog = () => {
                     value={image}
                     onChange={setImage}
                     required
-                    leftSection={<Image size={22} />}
-                    leftSectionWidth={45}
+                    leftSection={<Images size={24} aria-hidden="true" />}
+                    leftSectionPointerEvents="none"
+                    leftSectionWidth={56}
                     className="w-full"
                     styles={{
                         input: {
-                        height: "100px",
-                        paddingLeft: "50px",
+                            height: "88px",
+                            paddingLeft: "56px",
                         },
                     }}
                     />
 
                     <Button type="submit" loading={loading} color="dark">
-                        Publish blog
+                        Add blog
                     </Button>
                 </form>
             </section>
