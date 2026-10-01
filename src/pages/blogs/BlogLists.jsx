@@ -3,6 +3,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { APIURL, GetRequest } from "../services/http";
 
+const getImageUrl = (image) => {
+  if (/^https?:\/\//i.test(image)) {
+    return image;
+  }
+
+  const imagePath = image.replace(/\\/g, "/").replace(/^\/+/, "");
+  return `${APIURL.replace(/\/+$/, "")}/${imagePath}`;
+};
+
 const BlogLists = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +105,7 @@ const BlogLists = () => {
               >
                 {blog.image ? (
                   <img
-                    src={blog.image}
+                    src={getImageUrl(blog.image)}
                     alt={blog.title || "Blog cover"}
                     className="h-52 w-full object-cover"
                   />

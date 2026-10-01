@@ -1,13 +1,15 @@
-import { Alert, Button, FileInput, Textarea, TextInput } from "@mantine/core";
+import { Alert, Button, FileInput, NumberInput, Select, Switch, Textarea, TextInput } from "@mantine/core";
 import { Images } from "lucide-react";
-import { useState } from "react";
-import { APIURL, PostRequest } from "../services/http";
+import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { APIURL, GetRequest, PostRequest } from "../services/http";
 
 const initialForm = {
     title: "",
     body: "",
     category: "",
-    image: "",
+    likes: 0,
+    status: true,
 };
 
 const getErrorMessage = (requestError, fallback) => {
@@ -25,6 +27,10 @@ const getErrorMessage = (requestError, fallback) => {
 const AddBlog = () => {
     const [form, setForm] = useState(initialForm);
     const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState("");
+    const [users, setUsers] = useState([]);
+    const [author, setAuthor] = useState(null);
+    const [usersLoading, setUsersLoading] = useState(true);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
@@ -32,6 +38,42 @@ const AddBlog = () => {
     const updateField = (event) => {
         setForm({ ...form, [event.target.name]: event.target.value });
     };
+
+    useEffect(() => {
+        let active = true;
+
+        GetRequest("users/getAll")
+            .then(({ data }) => {
+                if (active) {
+                    setUsers(Array.isArray(data) ? data : []);
+                }
+            })
+            .catch((requestError) => {
+                if (active) {
+                    setError(getErrorMessage(requestError, "Unable to load authors."));
+                }
+            })
+            .finally(() => {
+                if (active) {
+                    setUsersLoading(false);
+                }
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!image) {
+            setImagePreview("");
+            return undefined;
+        }
+
+        const previewUrl = URL.createObjectURL(image);
+        setImagePreview(previewUrl);
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [image]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -43,19 +85,28 @@ const AddBlog = () => {
             return;
         }
 
+        if (!author) {
+            setError("Select an author before publishing.");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const payload = new FormData();
-            payload.append("title", form.title);
-            payload.append("body", form.body);
-            payload.append("category", form.category);
-            payload.append("image", image);
+            const formData = new FormData();
+            formData.append("title", form.title);
+            formData.append("body", form.body);
+            formData.append("category", form.category);
+            formData.append("likes", String(form.likes));
+            formData.append("status", String(form.status));
+            formData.append("author", author);
+            formData.append("image", image);
 
-            await PostRequest("blogs/create", payload);
+            await PostRequest("blogs/create", formData);
             setSuccess("Blog created successfully.");
             setForm(initialForm);
             setImage(null);
+            setAuthor(null);
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to create the blog."));
         } finally {
@@ -78,6 +129,11 @@ const AddBlog = () => {
 
                 {error && <Alert color="red" className="mt-6">{error}</Alert>}
                 {success && <Alert color="green" className="mt-6">{success}</Alert>}
+                {success && (
+                    <Button component={Link} to="/blogs" color="dark" className="mt-4">
+                        View blogs
+                    </Button>
+                )}
 
                 <form onSubmit={handleSubmit} className="mt-7 space-y-5">
                     <TextInput
@@ -102,12 +158,32 @@ const AddBlog = () => {
                         onChange={updateField}
                         required
                     />
-                    <TextInput
-                        label="likes"
-                        name="likes"
-                        value={form.likes}
-                        onChange={updateField}
+                    <Select
+                        label="Author"
+                        placeholder={usersLoading ? "Loading authors..." : "Select an author"}
+                        searchable
+                        clearable
+                        value={author}
+                        onChange={setAuthor}
+                        data={users.map((user) => ({
+                            label: user.fullName,
+                            value: user._id,
+                        }))}
+                        disabled={usersLoading}
+                        nothingFoundMessage="No users found"
                         required
+                    />
+                    <NumberInput
+                        label="Likes"
+                        value={form.likes}
+                        onChange={(value) => setForm({ ...form, likes: Number(value) || 0 })}
+                        min={0}
+                        allowDecimal={false}
+                    />
+                    <Switch
+                        label="Visible to readers"
+                        checked={form.status}
+                        onChange={(event) => setForm({ ...form, status: event.currentTarget.checked })}
                     />
 
                     <FileInput
@@ -128,6 +204,19 @@ const AddBlog = () => {
                         },
                     }}
                     />
+
+                    {imagePreview && (
+                        <div className="overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                            <p className="border-b border-gray-200 px-4 py-2 text-sm font-medium text-gray-600">
+                                Image preview
+                            </p>
+                            <img
+                                src={imagePreview}
+                                alt="Selected blog cover preview"
+                                className="h-64 w-full object-cover p-4"
+                            />
+                        </div>
+                    )}
 
                     <Button type="submit" loading={loading} color="dark">
                         Add blog
