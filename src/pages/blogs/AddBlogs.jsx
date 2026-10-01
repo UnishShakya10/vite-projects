@@ -101,14 +101,25 @@ const AddBlog = () => {
                         onChange={updateField}
                         required
                     />
+
                     <FileInput
-                        label="Cover image URL"
-                        placeholder="Choose an image file"
-                        accept="image/*"
-                        value={image}
-                        onChange={setImage}
-                        required
+                    label="Cover image"
+                    placeholder="Choose an image file"
+                    accept="image/*"
+                    value={image}
+                    onChange={setImage}
+                    required
+                    leftSection={<Image size={22} />}
+                    leftSectionWidth={45}
+                    className="w-full"
+                    styles={{
+                        input: {
+                        height: "100px",
+                        paddingLeft: "50px",
+                        },
+                    }}
                     />
+
                     <Button type="submit" loading={loading} color="dark">
                         Publish blog
                     </Button>
